@@ -3,7 +3,7 @@
 ## Thu 22/10
 - [x] Atlas + connection
 - [x] GitHub repo
-- [ ] 5 Models
+- [x] 5 Models
 
 ## Fri 23/10
 - [ ] Project CRUD (MVC)
