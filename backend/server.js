@@ -2,6 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
+const projectRoutes = require("./routes/projectRoutes");
+
 
 const app = express();
 
@@ -11,6 +13,8 @@ app.use(express.json());
 app.get("/", (req, res) => {
     res.json({ message: "ReproLab API is running" });
 });
+
+app.use("/api/projects", projectRoutes);
 
 const PORT = process.env.PORT || 5000;
 
