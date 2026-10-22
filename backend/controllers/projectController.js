@@ -1,12 +1,32 @@
 const Project = require("../models/Project");
+const Bug = require("../models/Bug");
+const Comment = require("../models/Comment");
+const ActivityLog = require("../models/ActivityLog");
+const { getPagination, escapeRegex } = require("../utils/helpers");
 
 const getProjects = async (req, res) => {
     try {
-        const projects = await Project.find()
-            .populate("owner", "name email")
-            .sort({ createdAt: -1 });
+        const { search } = req.query;
+        const { page, limit, skip } = getPagination(req.query);
 
-        res.json(projects);
+        const filter = {};
+        if (typeof search === "string" && search.trim()) {
+            filter.name = { $regex: escapeRegex(search.trim()), $options: "i" };
+        }
+
+        const total = await Project.countDocuments(filter);
+        const projects = await Project.find(filter)
+            .populate("owner", "name email")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.json({
+            projects,
+            page,
+            totalPages: Math.ceil(total / limit),
+            total,
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -45,7 +65,6 @@ const createProject = async (req, res) => {
     }
 };
 
-
 const updateProject = async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
@@ -53,7 +72,6 @@ const updateProject = async (req, res) => {
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
-
 
         const { name, description } = req.body;
         project.name = name;
@@ -67,23 +85,27 @@ const updateProject = async (req, res) => {
     }
 };
 
-
 const deleteProject = async (req, res) => {
     try {
-        const project = await Project.findByIdAndDelete(req.params.id);
+        const project = await Project.findById(req.params.id);
 
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
 
-    
+        const bugs = await Bug.find({ project: project._id }).select("_id");
+        const bugIds = bugs.map((bug) => bug._id);
+
+        await Comment.deleteMany({ bug: { $in: bugIds } });
+        await ActivityLog.deleteMany({ bug: { $in: bugIds } });
+        await Bug.deleteMany({ project: project._id });
+        await project.deleteOne();
 
         res.json({ message: "Project deleted successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
-
 
 module.exports = {
     getProjects,
