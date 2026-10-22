@@ -6,9 +6,9 @@
 - [x] 5 Models
 
 
-- [ ] Project CRUD (MVC)
-- [ ] Validation middleware
-- [ ] Test in Postman
+- [x] Project CRUD (MVC)
+- [x] Validation middleware
+- [] Test in Postman
 
 
 - [ ] Bug CRUD
