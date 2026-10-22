@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const projectRoutes = require("./routes/projectRoutes");
-
+const bugRoutes = require("./routes/bugRoutes");
 
 const app = express();
 
@@ -15,6 +15,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/projects", projectRoutes);
+app.use("/api", bugRoutes);
 
 const PORT = process.env.PORT || 5000;
 
