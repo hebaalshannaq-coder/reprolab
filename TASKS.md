@@ -8,18 +8,18 @@
 
 - [x] Project CRUD (MVC)
 - [x] Validation middleware
-- [] Test in Postman
+- [x] Test in Postman
 
 
-- [ ] Bug CRUD
-- [ ] Search / Filter / Pagination
+- [x] Bug CRUD
+- [x] Search / Filter / Pagination
 
 
-- [ ] Register / Login (bcrypt + JWT)
+- [x] Register / Login (bcrypt + JWT)
 
 
-- [ ] Authorization (roles + ownership)
-- [ ] Comments + ActivityLog + Admin API
+- [x] Authorization (roles + ownership)
+- [x] Comments + ActivityLog + Admin API
 - [ ] Deploy backend (Render)
 
 
