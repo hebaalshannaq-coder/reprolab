@@ -8,8 +8,8 @@ const {
     updateBug,
     deleteBug,
 } = require("../controllers/bugController");
-
-const devUser = require("../middleware/devUser");
+const { getActivity } = require("../controllers/activityController");
+const { protect } = require("../middleware/auth");
 const {
     validateId,
     validateProjectId,
@@ -17,17 +17,19 @@ const {
     validateBugUpdate,
 } = require("../middleware/validate");
 
-router.get("/projects/:projectId/bugs", devUser, validateProjectId, getBugs);
+router.get("/projects/:projectId/bugs", protect, validateProjectId, getBugs);
 router.post(
     "/projects/:projectId/bugs",
-    devUser,
+    protect,
     validateProjectId,
     validateBugCreate,
     createBug
 );
 
-router.get("/bugs/:id", devUser, validateId, getBugById);
-router.put("/bugs/:id", devUser, validateId, validateBugUpdate, updateBug);
-router.delete("/bugs/:id", devUser, validateId, deleteBug);
+router.get("/bugs/:id", protect, validateId, getBugById);
+router.put("/bugs/:id", protect, validateId, validateBugUpdate, updateBug);
+router.delete("/bugs/:id", protect, validateId, deleteBug);
+
+router.get("/bugs/:id/activity", protect, validateId, getActivity);
 
 module.exports = router;
