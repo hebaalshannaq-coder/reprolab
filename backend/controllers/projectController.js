@@ -2,7 +2,9 @@ const Project = require("../models/Project");
 const Bug = require("../models/Bug");
 const Comment = require("../models/Comment");
 const ActivityLog = require("../models/ActivityLog");
-const { getPagination, escapeRegex } = require("../utils/helpers");
+const { getPagination, escapeRegex, canModify } = require("../utils/helpers");
+
+
 
 const getProjects = async (req, res) => {
     try {
@@ -32,6 +34,8 @@ const getProjects = async (req, res) => {
     }
 };
 
+
+
 const getProjectById = async (req, res) => {
     try {
         const project = await Project.findById(req.params.id).populate(
@@ -49,12 +53,15 @@ const getProjectById = async (req, res) => {
     }
 };
 
+
+
+
 const createProject = async (req, res) => {
     try {
         const { name, description } = req.body;
 
         const project = await Project.create({
-            name,
+            name: name.trim(),
             description,
             owner: req.user._id,
         });
@@ -65,6 +72,8 @@ const createProject = async (req, res) => {
     }
 };
 
+
+
 const updateProject = async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
@@ -73,8 +82,14 @@ const updateProject = async (req, res) => {
             return res.status(404).json({ error: "Project not found" });
         }
 
+        if (!canModify(project.owner, req.user)) {
+            return res
+                .status(403)
+                .json({ error: "You can only modify your own projects" });
+        }
+
         const { name, description } = req.body;
-        project.name = name;
+        project.name = name.trim();
         if (description !== undefined) project.description = description;
 
         await project.save();
@@ -85,12 +100,21 @@ const updateProject = async (req, res) => {
     }
 };
 
+
+
+
 const deleteProject = async (req, res) => {
     try {
         const project = await Project.findById(req.params.id);
 
         if (!project) {
             return res.status(404).json({ error: "Project not found" });
+        }
+
+        if (!canModify(project.owner, req.user)) {
+            return res
+                .status(403)
+                .json({ error: "You can only delete your own projects" });
         }
 
         const bugs = await Bug.find({ project: project._id }).select("_id");
