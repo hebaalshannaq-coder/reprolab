@@ -3,19 +3,22 @@ const Project = require("../models/Project");
 const User = require("../models/User");
 const Comment = require("../models/Comment");
 const ActivityLog = require("../models/ActivityLog");
-const { SEVERITIES, PRIORITIES, STATUSES } = require("../config/constants");
-const { getPagination, escapeRegex } = require("../utils/helpers");
+const {
+    SEVERITIES,
+    PRIORITIES,
+    STATUSES,
+} = require("../config/constants");
+const { getPagination, escapeRegex, canModify } = require("../utils/helpers");
 
 
-
-const getBugs = async (req,res) =>{
-    try{
+const getBugs = async (req, res) => {
+    try {
         const project = await Project.findById(req.params.projectId);
-        if (!project){
+        if (!project) {
             return res.status(404).json({ error: "Project not found" });
         }
 
-        const {search,status,severity,priority  } = req.query;
+        const { search, status, severity, priority } = req.query;
         const { page, limit, skip } = getPagination(req.query);
 
         const filter = { project: project._id };
@@ -108,7 +111,8 @@ const createBug = async (req, res) => {
     }
 };
 
-const getBugById = async (req,res) => {
+
+const getBugById = async (req, res) => {
     try {
         const bug = await Bug.findById(req.params.id)
             .populate("project", "name")
@@ -132,6 +136,9 @@ const updateBug = async (req, res) => {
             return res.status(404).json({ error: "Bug not found" });
         }
 
+        if (!canModify(bug.reporter, req.user)) {
+            return res.status(403).json({ error: "You can only modify your own bugs" });
+        }
 
         const { assignee } = req.body;
         if (assignee) {
@@ -192,11 +199,16 @@ const updateBug = async (req, res) => {
     }
 };
 
+
 const deleteBug = async (req, res) => {
     try {
         const bug = await Bug.findById(req.params.id);
         if (!bug) {
             return res.status(404).json({ error: "Bug not found" });
+        }
+
+        if (!canModify(bug.reporter, req.user)) {
+            return res.status(403).json({ error: "You can only delete your own bugs" });
         }
 
         await Comment.deleteMany({ bug: bug._id });
