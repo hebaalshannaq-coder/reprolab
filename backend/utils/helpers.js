@@ -8,4 +8,8 @@ const getPagination = (query) => {
 
 const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-module.exports = { getPagination, escapeRegex };
+
+const canModify = (ownerId, user) =>
+    user.role === "admin" || ownerId.toString() === user._id.toString();
+
+module.exports = { getPagination, escapeRegex, canModify };
