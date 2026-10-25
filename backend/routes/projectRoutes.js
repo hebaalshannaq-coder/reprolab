@@ -8,11 +8,10 @@ const {
     updateProject,
     deleteProject,
 } = require("../controllers/projectController");
-
-const devUser = require("../middleware/devUser");
+const { protect } = require("../middleware/auth");
 const { validateProject, validateId } = require("../middleware/validate");
 
-router.use(devUser);
+router.use(protect);
 
 router.get("/", getProjects);
 router.post("/", validateProject, createProject);
