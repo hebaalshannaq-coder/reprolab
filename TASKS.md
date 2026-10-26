@@ -23,7 +23,7 @@
 - [x] Deploy backend (Render)
 
 
-- [ ] React setup + AuthContext + Protected routes
+- [x] React setup + AuthContext + Protected routes
 
 
 - [ ] Projects + Bugs pages (filters, pagination)
