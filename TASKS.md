@@ -20,7 +20,7 @@
 
 - [x] Authorization (roles + ownership)
 - [x] Comments + ActivityLog + Admin API
-- [ ] Deploy backend (Render)
+- [x] Deploy backend (Render)
 
 
 - [ ] React setup + AuthContext + Protected routes
