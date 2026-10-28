@@ -11,3 +11,22 @@ const COLORS = {
     Verified: "#20c990",
     Closed: "#6c757d",
 };
+
+const Badge = ({ label }) => {
+    return (
+        <span
+            style={{
+                background: COLORS[label] || "#6c757d",
+                color: "white",
+                padding: "2px 8px",
+                borderRadius: "10px",
+                fontSize: "12px",
+                marginRight: "6px",
+            }}
+        >
+            {label}
+        </span>
+    );
+};
+
+export default Badge;
