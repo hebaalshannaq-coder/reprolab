@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Projects from "./pages/Projects";
 import AdminPanel from "./pages/AdminPanel";
+import ProjectDetails from "./pages/ProjectDetails";
 
 const App = () => {
   return (
@@ -35,7 +36,15 @@ const App = () => {
           path="/projects/:id"
           element={
             <ProtectedRoute>
-              <p>Project details page (coming next)</p>
+              <ProjectDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/bugs/:id"
+          element={
+            <ProtectedRoute>
+              <p>Bug details page (coming next)</p>
             </ProtectedRoute>
           }
         />
