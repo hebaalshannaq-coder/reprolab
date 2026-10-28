@@ -26,7 +26,7 @@
 - [x] React setup + AuthContext + Protected routes
 
 
-- [ ] Projects + Bugs pages (filters, pagination)
+- [x] Projects + Bugs pages (filters, pagination)
 
 
 - [ ] Bug details + comments + timeline + Admin panel
