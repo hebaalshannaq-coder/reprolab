@@ -31,6 +31,14 @@ const App = () => {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/projects/:id"
+          element={
+            <ProtectedRoute>
+              <p>Project details page (coming next)</p>
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
