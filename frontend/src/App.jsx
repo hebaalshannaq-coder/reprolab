@@ -6,6 +6,8 @@ import Register from "./pages/Register";
 import Projects from "./pages/Projects";
 import AdminPanel from "./pages/AdminPanel";
 import ProjectDetails from "./pages/ProjectDetails";
+import BugDetails from "./pages/BugDetails";
+
 
 const App = () => {
   return (
@@ -44,7 +46,7 @@ const App = () => {
           path="/bugs/:id"
           element={
             <ProtectedRoute>
-              <p>Bug details page (coming next)</p>
+              <BugDetails />
             </ProtectedRoute>
           }
         />
