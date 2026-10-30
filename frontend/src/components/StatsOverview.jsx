@@ -1,70 +1,108 @@
 import { useEffect, useState } from "react";
+import { Row, Col, Card, Spinner } from "react-bootstrap";
 import { request } from "../api/api";
+import { useToast } from "../context/ToastContext";
 import Badge from "./Badge";
 
+const STATUS_COLORS = {
+    New: "#38bdf8", "In Progress": "#a78bfa", Fixed: "#34d399",
+    Verified: "#2dd4bf", Closed: "#64748b",
+    Critical: "#f43f5e", Major: "#fb923c", Minor: "#facc15",
+};
+
+const StatCard = ({ icon, value, label, color }) => (
+    <Card className="stat-card h-100">
+        <div className="d-flex align-items-center gap-3 p-3">
+            <div className="stat-icon" style={{ background: `${color}22`, color }}>
+                {icon}
+            </div>
+            <div>
+                <div className="stat-value">{value}</div>
+                <div className="text-muted small">{label}</div>
+            </div>
+        </div>
+    </Card>
+);
+
+const BreakdownCard = ({ title, data }) => {
+    const total = Object.values(data).reduce((sum, n) => sum + n, 0);
+
+    return (
+        <Card className="p-3 h-100">
+            <h6 className="mb-3">{title}</h6>
+            {Object.entries(data).map(([label, count]) => {
+                const percent = total ? Math.round((count / total) * 100) : 0;
+                return (
+                    <div key={label} className="mb-3">
+                        <div className="d-flex justify-content-between align-items-center mb-1">
+                            <Badge label={label} />
+                            <small className="text-muted">
+                                <strong className="text-light">{count}</strong> · {percent}%
+                            </small>
+                        </div>
+                        <div className="progress-track">
+                            <div
+                                className="progress-fill"
+                                style={{
+                                    width: `${percent}%`,
+                                    background: STATUS_COLORS[label] || "var(--primary)",
+                                }}
+                            />
+                        </div>
+                    </div>
+                );
+            })}
+        </Card>
+    );
+};
+
 const StatsOverview = ({ refreshKey }) => {
+    const { notify } = useToast();
     const [stats, setStats] = useState(null);
-    const [error, setError] = useState("");
 
     useEffect(() => {
         const loadStats = async () => {
             try {
-                setError("");
                 const data = await request("/admin/stats");
                 setStats(data);
             } catch (err) {
-                setError(err.message);
+                notify(err.message, "error");
             }
         };
         loadStats();
-    }, [refreshKey]);
+    }, [refreshKey, notify]);
 
-    if (error) return <p style={{ color: "red" }}>{error}</p>;
-    if (!stats) return <p>Loading statistics...</p>;
+    if (!stats) {
+        return (
+            <div className="text-center my-4">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        );
+    }
 
     return (
         <div>
-            <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
-                <div style={cardStyle}>
-                    <h3>{stats.totalUsers}</h3>
-                    <p>Users</p>
-                </div>
-                <div style={cardStyle}>
-                    <h3>{stats.totalProjects}</h3>
-                    <p>Projects</p>
-                </div>
-                <div style={cardStyle}>
-                    <h3>{stats.totalBugs}</h3>
-                    <p>Bugs</p>
-                </div>
-            </div>
-
-            <h4>Bugs by status</h4>
-            <ul>
-                {Object.entries(stats.bugsByStatus).map(([label, count]) => (
-                    <li key={label}>
-                        <Badge label={label} /> {count}
-                    </li>
-                ))}
-            </ul>
-
-            <h4>Bugs by severity</h4>
-            <ul>
-                {Object.entries(stats.bugsBySeverity).map(([label, count]) => (
-                    <li key={label}>
-                        <Badge label={label} /> {count}
-                    </li>
-                ))}
-            </ul>
+            <Row className="g-3 mb-3">
+                <Col xs={12} sm={4}>
+                    <StatCard icon="👥" value={stats.totalUsers} label="Users" color="#2dd4bf" />
+                </Col>
+                <Col xs={12} sm={4}>
+                    <StatCard icon="📁" value={stats.totalProjects} label="Projects" color="#ff6b8b" />
+                </Col>
+                <Col xs={12} sm={4}>
+                    <StatCard icon="🐞" value={stats.totalBugs} label="Bugs" color="#a78bfa" />
+                </Col>
+            </Row>
+            <Row className="g-3">
+                <Col md={6}>
+                    <BreakdownCard title="Bugs by status" data={stats.bugsByStatus} />
+                </Col>
+                <Col md={6}>
+                    <BreakdownCard title="Bugs by severity" data={stats.bugsBySeverity} />
+                </Col>
+            </Row>
         </div>
     );
-};
-
-const cardStyle = {
-    border: "1px solid #ccc",
-    borderRadius: "8px",
-    padding: "8px 24px",
-    textAlign: "center",
 };
 
 export default StatsOverview;

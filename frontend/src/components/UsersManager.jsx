@@ -1,40 +1,40 @@
 import { useCallback, useEffect, useState } from "react";
+import { Form, Button, Spinner, Table } from "react-bootstrap";
 import { request } from "../api/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import Pagination from "./Pagination";
 import useDebounce from "../hooks/useDebounce";
 import { ROLES } from "../utils/constants";
 
 const UsersManager = ({ onChanged }) => {
     const { user: currentUser } = useAuth();
+    const { notify } = useToast();
 
     const [users, setUsers] = useState([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [total, setTotal] = useState(0);
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebounce(search);
-
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const [actionError, setActionError] = useState("");
-    const [message, setMessage] = useState("");
 
     const loadUsers = useCallback(async () => {
         try {
             setLoading(true);
-            setError("");
             const params = new URLSearchParams({ page, limit: 8 });
             if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
 
             const data = await request(`/admin/users?${params.toString()}`);
             setUsers(data.users);
             setTotalPages(data.totalPages);
+            setTotal(data.total);
         } catch (err) {
-            setError(err.message);
+            notify(err.message, "error");
         } finally {
             setLoading(false);
         }
-    }, [page, debouncedSearch]);
+    }, [page, debouncedSearch, notify]);
 
     useEffect(() => {
         loadUsers();
@@ -45,97 +45,117 @@ const UsersManager = ({ onChanged }) => {
     }, [debouncedSearch]);
 
     const handleRoleChange = async (target, newRole) => {
-        setActionError("");
-        setMessage("");
-
         try {
             await request(`/admin/users/${target._id}/role`, {
                 method: "PUT",
                 body: { role: newRole },
             });
-            setMessage(`${target.name} is now ${newRole}`);
+            notify(`${target.name} is now ${newRole}`);
             await loadUsers();
             onChanged();
         } catch (err) {
-            setActionError(err.message);
+            notify(err.message, "error");
         }
     };
 
     const handleDelete = async (target) => {
         if (!window.confirm(`Delete user "${target.name}"?`)) return;
 
-        setActionError("");
-        setMessage("");
-
         try {
             await request(`/admin/users/${target._id}`, { method: "DELETE" });
-            setMessage(`${target.name} was deleted`);
+            notify(`${target.name} was deleted`);
             await loadUsers();
             onChanged();
         } catch (err) {
-            setActionError(err.message);
+            notify(err.message, "error");
         }
     };
 
     return (
         <div>
-            <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-            />
+            <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h6 className="mb-0">
+                    All users <span className="text-muted">({total})</span>
+                </h6>
+                <Form.Control
+                    size="sm"
+                    style={{ maxWidth: "280px" }}
+                    placeholder="🔍 Search name or email..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
+            </div>
 
-            {error && <p style={{ color: "red" }}>{error}</p>}
-            {actionError && <p style={{ color: "red" }}>{actionError}</p>}
-            {message && <p style={{ color: "green" }}>{message}</p>}
-            {loading && <p>Loading...</p>}
-            {!loading && !error && users.length === 0 && <p>No users found.</p>}
+            {loading && (
+                <div className="text-center my-3">
+                    <Spinner animation="border" size="sm" variant="primary" />
+                </div>
+            )}
+
+            {!loading && users.length === 0 && (
+                <p className="text-muted text-center my-3">No users found.</p>
+            )}
 
             {users.length > 0 && (
-                <div style={{ overflowX: "auto" }}>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Joined</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {users.map((u) => {
-                                const isSelf = u._id === currentUser._id;
-                                return (
-                                    <tr key={u._id}>
-                                        <td>
-                                            {u.name} {isSelf && <small>(you)</small>}
-                                        </td>
-                                        <td>{u.email}</td>
-                                        <td>
-                                            <select
-                                                value={u.role}
-                                                onChange={(e) => handleRoleChange(u, e.target.value)}
-                                                disabled={isSelf}
-                                            >
-                                                {ROLES.map((r) => (
-                                                    <option key={r} value={r}>{r}</option>
-                                                ))}
-                                            </select>
-                                        </td>
-                                        <td>{new Date(u.createdAt).toLocaleDateString()}</td>
-                                        <td>
-                                            <button onClick={() => handleDelete(u)} disabled={isSelf}>
-                                                Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
+                <Table responsive hover className="align-middle users-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th className="d-none d-md-table-cell">Joined</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {users.map((u) => {
+                            const isSelf = u._id === currentUser._id;
+                            return (
+                                <tr key={u._id}>
+                                    <td>
+                                        <div className="d-flex align-items-center gap-2">
+                                            <div className={`avatar ${u.role === "admin" ? "admin" : ""}`}>
+                                                {u.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div style={{ minWidth: 0 }}>
+                                                <div className="fw-semibold">
+                                                    {u.name}{" "}
+                                                    {isSelf && <small className="text-muted">(you)</small>}
+                                                </div>
+                                                <small className="text-muted">{u.email}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <Form.Select
+                                            size="sm"
+                                            style={{ width: "auto" }}
+                                            value={u.role}
+                                            onChange={(e) => handleRoleChange(u, e.target.value)}
+                                            disabled={isSelf}
+                                        >
+                                            {ROLES.map((r) => (
+                                                <option key={r} value={r}>{r}</option>
+                                            ))}
+                                        </Form.Select>
+                                    </td>
+                                    <td className="d-none d-md-table-cell text-muted">
+                                        {new Date(u.createdAt).toLocaleDateString()}
+                                    </td>
+                                    <td className="text-end">
+                                        <Button
+                                            variant="outline-danger"
+                                            size="sm"
+                                            onClick={() => handleDelete(u)}
+                                            disabled={isSelf}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </Table>
             )}
 
             <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />

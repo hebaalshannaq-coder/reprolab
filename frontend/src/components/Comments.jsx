@@ -1,16 +1,17 @@
 import { useState } from "react";
+import { Card, Form, Button } from "react-bootstrap";
 import { request } from "../api/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 const Comments = ({ bugId, comments, onChanged }) => {
     const { user } = useAuth();
+    const { notify } = useToast();
     const [text, setText] = useState("");
-    const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError("");
         setSubmitting(true);
 
         try {
@@ -18,10 +19,11 @@ const Comments = ({ bugId, comments, onChanged }) => {
                 method: "POST",
                 body: { text },
             });
+            notify("Comment added");
             setText("");
             onChanged();
         } catch (err) {
-            setError(err.message);
+            notify(err.message, "error");
         } finally {
             setSubmitting(false);
         }
@@ -32,9 +34,10 @@ const Comments = ({ bugId, comments, onChanged }) => {
 
         try {
             await request(`/comments/${commentId}`, { method: "DELETE" });
+            notify("Comment deleted");
             onChanged();
         } catch (err) {
-            setError(err.message);
+            notify(err.message, "error");
         }
     };
 
@@ -43,34 +46,52 @@ const Comments = ({ bugId, comments, onChanged }) => {
 
     return (
         <div>
-            {comments.length === 0 && <p>No comments yet.</p>}
+            {comments.length === 0 && (
+                <p className="text-muted">No comments yet. Be the first!</p>
+            )}
 
-            <ul>
+            <div className="d-flex flex-column gap-2 mb-3">
                 {comments.map((comment) => (
-                    <li key={comment._id}>
-                        <strong>{comment.author?.name || "Deleted user"}</strong>
-                        <small> · {new Date(comment.createdAt).toLocaleString()}</small>
-                        <p>{comment.text}</p>
-                        {canDelete(comment) && (
-                            <button onClick={() => handleDelete(comment._id)}>Delete</button>
-                        )}
-                    </li>
+                    <Card key={comment._id} className="p-3">
+                        <div className="d-flex justify-content-between align-items-start gap-2">
+                            <div>
+                                <strong>{comment.author?.name || "Deleted user"}</strong>
+                                <small className="text-muted">
+                                    {" "}· {new Date(comment.createdAt).toLocaleString()}
+                                </small>
+                            </div>
+                            {canDelete(comment) && (
+                                <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    onClick={() => handleDelete(comment._id)}
+                                >
+                                    Delete
+                                </Button>
+                            )}
+                        </div>
+                        <p className="mb-0 mt-2" style={{ whiteSpace: "pre-wrap" }}>
+                            {comment.text}
+                        </p>
+                    </Card>
                 ))}
-            </ul>
+            </div>
 
-            <form onSubmit={handleSubmit}>
-                {error && <p style={{ color: "red" }}>{error}</p>}
-                <textarea
+            <Form onSubmit={handleSubmit}>
+                <Form.Control
+                    as="textarea"
+                    rows={3}
+                    className="mb-2"
                     placeholder="Write a comment..."
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     maxLength={1000}
                     required
                 />
-                <button type="submit" disabled={submitting}>
+                <Button type="submit" disabled={submitting}>
                     {submitting ? "Sending..." : "Add comment"}
-                </button>
-            </form>
+                </Button>
+            </Form>
         </div>
     );
 };
