@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Card, Form, Button, Alert } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
 
 const Register = () => {
@@ -28,42 +29,55 @@ const Register = () => {
     };
 
     return (
-        <div>
-            <h2>Register</h2>
+        <div className="auth-wrapper">
+            <Card style={{ width: "100%", maxWidth: "420px" }} className="p-4">
+                <h3 className="text-center mb-1">Create account</h3>
+                <p className="text-center text-muted mb-4">Join ReproLab</p>
 
-            {error && <p style={{ color: "red" }}>{error}</p>}
+                {error && <Alert variant="danger">{error}</Alert>}
 
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                />
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
-                <input
-                    type="password"
-                    placeholder="Password (min 6 characters)"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    minLength={6}
-                    required
-                />
-                <button type="submit" disabled={submitting}>
-                    {submitting ? "Creating account..." : "Register"}
-                </button>
-            </form>
+                <Form onSubmit={handleSubmit}>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Name</Form.Label>
+                        <Form.Control
+                            type="text"
+                            placeholder="Your name"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            maxLength={50}
+                            required
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Email</Form.Label>
+                        <Form.Control
+                            type="email"
+                            placeholder="you@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </Form.Group>
+                    <Form.Group className="mb-3">
+                        <Form.Label>Password</Form.Label>
+                        <Form.Control
+                            type="password"
+                            placeholder="At least 6 characters"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            minLength={6}
+                            required
+                        />
+                    </Form.Group>
+                    <Button type="submit" className="w-100" disabled={submitting}>
+                        {submitting ? "Creating account..." : "Register"}
+                    </Button>
+                </Form>
 
-            <p>
-                Have an account? <Link to="/login">Login</Link>
-            </p>
+                <p className="text-center text-muted mt-3 mb-0">
+                    Have an account? <Link to="/login">Login</Link>
+                </p>
+            </Card>
         </div>
     );
 };
