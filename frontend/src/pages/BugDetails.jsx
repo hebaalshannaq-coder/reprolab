@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import { Row, Col, Card, Form, Button, Spinner } from "react-bootstrap";
 import { request } from "../api/api";
 import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 import Badge from "../components/Badge";
 import Comments from "../components/Comments";
 import Timeline from "../components/Timeline";
@@ -10,18 +12,18 @@ import { STATUSES } from "../utils/constants";
 const BugDetails = () => {
     const { id } = useParams();
     const { user } = useAuth();
+    const { notify } = useToast();
     const navigate = useNavigate();
 
     const [bug, setBug] = useState(null);
     const [comments, setComments] = useState([]);
     const [activity, setActivity] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const [actionError, setActionError] = useState("");
+    const [loadError, setLoadError] = useState("");
 
     const loadAll = useCallback(async () => {
         try {
-            setError("");
+            setLoadError("");
             const [bugData, commentsData, activityData] = await Promise.all([
                 request(`/bugs/${id}`),
                 request(`/bugs/${id}/comments`),
@@ -31,7 +33,7 @@ const BugDetails = () => {
             setComments(commentsData);
             setActivity(activityData);
         } catch (err) {
-            setError(err.message);
+            setLoadError(err.message);
         } finally {
             setLoading(false);
         }
@@ -42,15 +44,15 @@ const BugDetails = () => {
     }, [loadAll]);
 
     const handleStatusChange = async (e) => {
-        setActionError("");
         try {
             await request(`/bugs/${id}`, {
                 method: "PUT",
                 body: { status: e.target.value },
             });
+            notify("Status updated");
             await loadAll();
         } catch (err) {
-            setActionError(err.message);
+            notify(err.message, "error");
         }
     };
 
@@ -59,92 +61,118 @@ const BugDetails = () => {
 
         try {
             await request(`/bugs/${id}`, { method: "DELETE" });
+            notify("Bug deleted");
             navigate(`/projects/${bug.project._id}`);
         } catch (err) {
-            setActionError(err.message);
+            notify(err.message, "error");
         }
     };
 
-    if (loading) return <p>Loading...</p>;
-    if (error) {
+    if (loading) {
         return (
-            <div>
-                <p style={{ color: "red" }}>{error}</p>
+            <div className="text-center my-5">
+                <Spinner animation="border" variant="primary" />
+            </div>
+        );
+    }
+
+    if (loadError) {
+        return (
+            <div className="text-center my-5">
+                <p className="text-muted">{loadError}</p>
                 <Link to="/">← Back to projects</Link>
             </div>
         );
     }
 
-    const canModify =
-        user.role === "admin" || bug.reporter?._id === user._id;
+    const canModify = user.role === "admin" || bug.reporter?._id === user._id;
 
     return (
         <div>
-            <Link to={`/projects/${bug.project._id}`}>
+            <Link to={`/projects/${bug.project._id}`} className="text-muted">
                 ← Back to {bug.project.name}
             </Link>
 
-            <h2>{bug.title}</h2>
-            <div>
-                <Badge label={bug.status} />
-                <Badge label={bug.severity} />
-                <Badge label={bug.priority} />
-            </div>
-
-            <p>
-                <small>
+            <div className="mt-3 mb-4">
+                <h2 className="page-title mb-3">{bug.title}</h2>
+                <div className="mb-2 d-flex flex-wrap gap-1">
+                    <Badge label={bug.status} />
+                    <Badge label={bug.severity} />
+                    <Badge label={bug.priority} />
+                </div>
+                <small className="text-muted">
                     Reported by {bug.reporter?.name || "Deleted user"} on{" "}
                     {new Date(bug.createdAt).toLocaleString()}
                     {bug.assignee && ` · Assigned to ${bug.assignee.name}`}
                 </small>
-            </p>
-
-            {actionError && <p style={{ color: "red" }}>{actionError}</p>}
+            </div>
 
             {canModify && (
-                <div>
-                    <label>
-                        Status:{" "}
-                        <select value={bug.status} onChange={handleStatusChange}>
-                            {STATUSES.map((s) => (
-                                <option key={s} value={s}>{s}</option>
-                            ))}
-                        </select>
-                    </label>
-                    <button onClick={handleDelete}>Delete bug</button>
-                </div>
+                <Card className="p-3 mb-4">
+                    <div className="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div className="d-flex align-items-center gap-2">
+                            <Form.Label className="mb-0">Status</Form.Label>
+                            <Form.Select
+                                size="sm"
+                                style={{ width: "auto" }}
+                                value={bug.status}
+                                onChange={handleStatusChange}
+                            >
+                                {STATUSES.map((s) => (
+                                    <option key={s} value={s}>{s}</option>
+                                ))}
+                            </Form.Select>
+                        </div>
+                        <Button variant="outline-danger" size="sm" onClick={handleDelete}>
+                            Delete bug
+                        </Button>
+                    </div>
+                </Card>
             )}
 
-            {bug.description && (
-                <>
-                    <h3>Description</h3>
-                    <p>{bug.description}</p>
-                </>
-            )}
+            <Row className="g-4">
+                <Col lg={8}>
+                    <Card className="p-3 mb-4">
+                        {bug.description && (
+                            <>
+                                <h6 className="text-muted">Description</h6>
+                                <p>{bug.description}</p>
+                            </>
+                        )}
 
-            <h3>Steps to reproduce</h3>
-            <p style={{ whiteSpace: "pre-wrap" }}>{bug.stepsToReproduce}</p>
+                        <h6 className="text-muted">Steps to reproduce</h6>
+                        <p style={{ whiteSpace: "pre-wrap" }}>{bug.stepsToReproduce}</p>
 
-            <h3>Expected result</h3>
-            <p>{bug.expectedResult}</p>
+                        <Row>
+                            <Col md={6}>
+                                <h6 className="text-muted">Expected result</h6>
+                                <p>{bug.expectedResult}</p>
+                            </Col>
+                            <Col md={6}>
+                                <h6 className="text-muted">Actual result</h6>
+                                <p>{bug.actualResult}</p>
+                            </Col>
+                        </Row>
 
-            <h3>Actual result</h3>
-            <p>{bug.actualResult}</p>
+                        {bug.environment && (
+                            <>
+                                <h6 className="text-muted">Environment</h6>
+                                <p className="mb-0">{bug.environment}</p>
+                            </>
+                        )}
+                    </Card>
 
-            {bug.environment && (
-                <>
-                    <h3>Environment</h3>
-                    <p>{bug.environment}</p>
-                </>
-            )}
+                    <h5 className="mb-3">Comments ({comments.length})</h5>
+                    <Comments bugId={id} comments={comments} onChanged={loadAll} />
+                </Col>
 
-            <hr />
-            <h3>Timeline</h3>
-            <Timeline activity={activity} />
-
-            <hr />
-            <h3>Comments ({comments.length})</h3>
-            <Comments bugId={id} comments={comments} onChanged={loadAll} />
+                <Col lg={4}>
+                    <Card className="p-3">
+                        <h5 className="mb-3">Timeline</h5>
+                        <Timeline activity={activity} />
+                    </Card>
+                </Col>
+            </Row>
         </div>
     );
 };
