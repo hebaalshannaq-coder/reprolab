@@ -30,11 +30,11 @@
 
 
 - [x] Bug details + comments + timeline + Admin panel
-- [ ] Deploy frontend (Netlify)
+- [x] Deploy frontend (Netlify)
 
 
-- [ ] Styling (React-Bootstrap) + Responsive
-- [ ] Extras: Cloudinary / Kanban
+- [x] Styling (React-Bootstrap) + Responsive
+- [ ] Extras: Cloudinary
 
 
 - [ ] Final testing + README + video + submit
