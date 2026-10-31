@@ -9,6 +9,7 @@ import ProjectDetails from "./pages/ProjectDetails";
 import CreateBug from "./pages/CreateBug";
 import BugDetails from "./pages/BugDetails";
 import AdminPanel from "./pages/AdminPanel";
+import AdminBugs from "./pages/AdminBugs";
 
 const App = () => {
   return (
@@ -56,6 +57,15 @@ const App = () => {
             element={
               <ProtectedRoute adminOnly>
                 <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/admin/bugs"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminBugs />
               </ProtectedRoute>
             }
           />
