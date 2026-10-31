@@ -1,10 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Navbar as BsNavbar, Nav, Container, Button } from "react-bootstrap";
+
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 const Navbar = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
+    const { theme, toggleTheme } = useTheme();
 
     const handleLogout = () => {
         logout();
@@ -35,6 +38,14 @@ const Navbar = () => {
                         {user ? (
                             <>
                                 <span className="text-muted">Hi, {user.name}</span>
+                                <Button
+                                    variant="outline-primary"
+                                    size="sm"
+                                    onClick={toggleTheme}
+                                    aria-label="Toggle theme"
+                                >
+                                    {theme === "dark" ? "☀️" : "🌙"}
+                                </Button>
                                 <Button variant="outline-primary" size="sm" onClick={handleLogout}>
                                     Logout
                                 </Button>
