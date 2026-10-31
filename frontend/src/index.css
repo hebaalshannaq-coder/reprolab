@@ -313,3 +313,29 @@ a {
     background: transparent;
     border-color: var(--border);
 }
+
+.project-chip {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--primary);
+    border-radius: 999px;
+    padding: 1px 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.project-chip:hover {
+    border-color: var(--primary);
+}
+
+.stat-row {
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 6px 8px;
+    margin: 0 -8px 8px;
+    transition: background 0.15s;
+}
+
+.stat-row:hover {
+    background: var(--surface-2);
+}
