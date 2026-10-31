@@ -16,7 +16,9 @@ const AdminPanel = () => {
 
             <StatsOverview refreshKey={refreshKey} />
 
-            <h5 className="mt-4 mb-3">Users</h5>
+            <h5 id="users-section" className="mt-4 mb-3">
+                Users
+            </h5>
             <Card className="p-3">
                 <UsersManager onChanged={refreshStats} />
             </Card>

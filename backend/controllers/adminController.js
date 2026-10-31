@@ -2,7 +2,7 @@ const User = require("../models/User");
 const Project = require("../models/Project");
 const Bug = require("../models/Bug");
 const Comment = require("../models/Comment");
-const { STATUSES, SEVERITIES } = require("../config/constants");
+const { STATUSES, SEVERITIES, PRIORITIES } = require("../config/constants");
 const { getPagination, escapeRegex } = require("../utils/helpers");
 
 const fillCounts = (allValues, aggregated) => {
@@ -61,7 +61,12 @@ const updateUserRole = async (req, res) => {
 
         res.json({
             message: "User role updated successfully",
-            user: { _id: user._id, name: user.name, email: user.email, role: user.role },
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -97,8 +102,6 @@ const deleteUser = async (req, res) => {
     }
 };
 
-
-
 const getStats = async (req, res) => {
     try {
         const [totalUsers, totalProjects, totalBugs, byStatus, bySeverity] =
@@ -122,4 +125,50 @@ const getStats = async (req, res) => {
     }
 };
 
-module.exports = { getUsers, updateUserRole, deleteUser, getStats };
+
+
+const getAllBugs = async (req, res) => {
+    try {
+        const { search, status, severity, priority } = req.query;
+        const { page, limit, skip } = getPagination(req.query);
+
+        const filter = {};
+
+        if (status) {
+            if (!STATUSES.includes(status)) {
+                return res.status(400).json({ error: "Invalid status filter" });
+            }
+            filter.status = status;
+        }
+        if (severity) {
+            if (!SEVERITIES.includes(severity)) {
+                return res.status(400).json({ error: "Invalid severity filter" });
+            }
+            filter.severity = severity;
+        }
+        if (priority) {
+            if (!PRIORITIES.includes(priority)) {
+                return res.status(400).json({ error: "Invalid priority filter" });
+            }
+            filter.priority = priority;
+        }
+        if (typeof search === "string" && search.trim()) {
+            filter.title = { $regex: escapeRegex(search.trim()), $options: "i" };
+        }
+
+        const total = await Bug.countDocuments(filter);
+        const bugs = await Bug.find(filter)
+            .populate("project", "name")
+            .populate("reporter", "name")
+            .populate("assignee", "name")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        res.json({ bugs, page, totalPages: Math.ceil(total / limit), total });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { getUsers, updateUserRole, deleteUser, getStats ,getAllBugs };

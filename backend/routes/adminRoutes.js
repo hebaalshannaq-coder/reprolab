@@ -6,6 +6,7 @@ const {
     updateUserRole,
     deleteUser,
     getStats,
+    getAllBugs,
 } = require("../controllers/adminController");
 const { protect, authorizeRole } = require("../middleware/auth");
 const { validateId, validateRole } = require("../middleware/validate");
@@ -16,5 +17,6 @@ router.get("/users", getUsers);
 router.put("/users/:id/role", validateId, validateRole, updateUserRole);
 router.delete("/users/:id", validateId, deleteUser);
 router.get("/stats", getStats);
+router.get("/bugs", getAllBugs);
 
 module.exports = router;
