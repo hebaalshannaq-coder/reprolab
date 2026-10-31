@@ -149,7 +149,10 @@ const Projects = () => {
                             onClick={() => navigate(`/projects/${project._id}`)}
                         >
                             <Card.Body className="d-flex flex-column">
-                                <Card.Title className="mb-2">{project.name}</Card.Title>
+                                <div className="d-flex flex-wrap justify-content-between align-items-baseline gap-1 mb-2">
+                                    <Card.Title className="mb-0">{project.name}</Card.Title>
+                                    <small className="text-muted">🕒 {formatDateTime(project.createdAt)}</small>
+                                </div>
                                 <Card.Text className="text-muted flex-grow-1">
                                     {project.description || "No description"}
                                 </Card.Text>

@@ -6,6 +6,7 @@ import Badge from "../components/Badge";
 import Pagination from "../components/Pagination";
 import useDebounce from "../hooks/useDebounce";
 import { SEVERITIES, PRIORITIES, STATUSES } from "../utils/constants";
+import { formatDateTime } from "../utils/formatDate";
 
 const ProjectDetails = () => {
     const { id } = useParams();
@@ -94,6 +95,9 @@ const ProjectDetails = () => {
                 <div className="d-flex flex-wrap justify-content-between align-items-start gap-3 mt-3 mb-4">
                     <div>
                         <h2 className="page-title mb-1">{project.name}</h2>
+                        <small className="text-muted d-block mb-1">
+                            🕒 Created {formatDateTime(project.createdAt)}
+                        </small>
                         <p className="text-muted mb-1">
                             {project.description || "No description"}
                         </p>
@@ -185,7 +189,7 @@ const ProjectDetails = () => {
                                     By {bug.reporter?.name || "Deleted user"}
                                     {bug.assignee && ` · Assigned to ${bug.assignee.name}`}
                                     {" · "}
-                                    {new Date(bug.createdAt).toLocaleDateString()}
+                                    {formatDateTime(bug.createdAt)}
                                 </small>
                             </div>
                             <div className="d-flex flex-wrap gap-1">
