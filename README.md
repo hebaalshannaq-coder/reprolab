@@ -6,7 +6,7 @@ Reporting a bug as "the login doesn't work" wastes everyone's time. ReproLab ask
 
 🌐 **Live demo:** https://reprolab.netlify.app
 🔗 **API:** https://reprolab.onrender.com
-🎥 **Video demo:** [add link]
+🎥 **Video demo:** []
 
 > The backend runs on Render's free tier, so the first request after a period of inactivity can take up to ~50 seconds.
 
