@@ -2,7 +2,10 @@ import { useState } from "react";
 import { Card, Form, Button, Row, Col } from "react-bootstrap";
 import { request } from "../api/api";
 import { useToast } from "../context/ToastContext";
+import { uploadImage } from "../utils/cloudinary";
 import { SEVERITIES, PRIORITIES } from "../utils/constants";
+
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
 const emptyForm = {
     title: "",
@@ -18,10 +21,34 @@ const emptyForm = {
 const BugForm = ({ projectId, onCreated }) => {
     const { notify } = useToast();
     const [form, setForm] = useState(emptyForm);
+    const [file, setFile] = useState(null);
+    const [preview, setPreview] = useState("");
     const [submitting, setSubmitting] = useState(false);
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const handleFile = (e) => {
+        const selected = e.target.files[0];
+        if (!selected) return;
+
+        if (!selected.type.startsWith("image/")) {
+            notify("Please choose an image file", "error");
+            return;
+        }
+        if (selected.size > MAX_SIZE) {
+            notify("Image must be 5MB or smaller", "error");
+            return;
+        }
+
+        setFile(selected);
+        setPreview(URL.createObjectURL(selected));
+    };
+
+    const removeFile = () => {
+        setFile(null);
+        setPreview("");
     };
 
     const handleSubmit = async (e) => {
@@ -29,12 +56,18 @@ const BugForm = ({ projectId, onCreated }) => {
         setSubmitting(true);
 
         try {
+            const body = { ...form };
+            if (file) {
+                body.screenshotUrl = await uploadImage(file);
+            }
+
             await request(`/projects/${projectId}/bugs`, {
                 method: "POST",
-                body: form,
+                body,
             });
             notify("Bug reported");
             setForm(emptyForm);
+            removeFile();
             onCreated();
         } catch (err) {
             notify(err.message, "error");
@@ -144,6 +177,31 @@ const BugForm = ({ projectId, onCreated }) => {
                         </Form.Group>
                     </Col>
                 </Row>
+
+                <Form.Group className="mb-3">
+                    <Form.Label>Screenshot (optional)</Form.Label>
+                    <Form.Control type="file" accept="image/*" onChange={handleFile} />
+                    {preview && (
+                        <div className="mt-2">
+                            <img
+                                src={preview}
+                                alt="Preview"
+                                className="bug-screenshot"
+                                style={{ maxHeight: "200px" }}
+                            />
+                            <div>
+                                <Button
+                                    variant="outline-danger"
+                                    size="sm"
+                                    className="mt-2"
+                                    onClick={removeFile}
+                                >
+                                    Remove image
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </Form.Group>
 
                 <Button type="submit" disabled={submitting}>
                     {submitting ? "Saving..." : "Report bug"}

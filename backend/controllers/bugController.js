@@ -10,7 +10,6 @@ const {
 } = require("../config/constants");
 const { getPagination, escapeRegex, canModify } = require("../utils/helpers");
 
-
 const getBugs = async (req, res) => {
     try {
         const project = await Project.findById(req.params.projectId);
@@ -67,7 +66,6 @@ const getBugs = async (req, res) => {
     }
 };
 
-
 const createBug = async (req, res) => {
     try {
         const project = await Project.findById(req.params.projectId);
@@ -84,6 +82,7 @@ const createBug = async (req, res) => {
             environment,
             severity,
             priority,
+            screenshotUrl,
         } = req.body;
 
         const bug = await Bug.create({
@@ -95,6 +94,7 @@ const createBug = async (req, res) => {
             environment,
             severity,
             priority,
+            screenshotUrl,
             project: project._id,
             reporter: req.user._id,
         });
@@ -110,7 +110,6 @@ const createBug = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
 
 const getBugById = async (req, res) => {
     try {
@@ -198,7 +197,6 @@ const updateBug = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
 
 const deleteBug = async (req, res) => {
     try {

@@ -160,6 +160,14 @@ const BugDetails = () => {
                                 <p className="mb-0">{bug.environment}</p>
                             </>
                         )}
+                        {bug.screenshotUrl && (
+                            <>
+                                <h6 className="text-muted mt-3">Screenshot</h6>
+                                <a href={bug.screenshotUrl} target="_blank" rel="noreferrer">
+                                    <img src={bug.screenshotUrl} alt="Bug screenshot" className="bug-screenshot" />
+                                </a>
+                            </>
+                        )}
                     </Card>
 
                     <h5 className="mb-3">Comments ({comments.length})</h5>
