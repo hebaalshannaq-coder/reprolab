@@ -1,136 +1,120 @@
 # 🧪 ReproLab
 
-**Bug tracking & reproduction platform built with the MERN stack.**
+A bug tracking web app built with the MERN stack, as my final project for the **DOT Jordan Full-Stack Web Development Bootcamp**.
 
-ReproLab helps teams report bugs in a structured way (steps to reproduce, expected vs. actual result, severity, priority, environment) so anyone can reproduce and fix them quickly.
+Reporting a bug as "the login doesn't work" wastes everyone's time. ReproLab asks for the details that make a bug reproducible: steps to reproduce, expected vs. actual result, environment, severity and priority.
 
-🔗 **Live API:** https://reprolab.onrender.com
-> The API runs on Render's free tier, so the first request may take up to ~50 seconds to wake the server.
+🌐 **Live demo:** https://reprolab.netlify.app
+🔗 **API:** https://reprolab.onrender.com
+🎥 **Video demo:** [add link]
+
+> The backend runs on Render's free tier, so the first request after a period of inactivity can take up to ~50 seconds.
+
+### Demo accounts
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@test.com` | `123456` |
+| User | `a@test.com` | `123456` |
+
+---
+
+## 📸 Screenshots
+
+| Projects | Project bugs |
+|---|---|
+| ![Projects](screenshots/projects.png) | ![Bugs](screenshots/bugs.png) |
+
+| Bug details | Admin panel |
+|---|---|
+| ![Bug details](screenshots/bug-details.png) | ![Admin](screenshots/admin.png) |
 
 ---
 
 ## ✨ Features
 
-- 🔐 **Authentication** with JWT and bcrypt password hashing
-- 🛡️ **Authorization**: roles (`user`, `admin`) + ownership checks
-- 📁 **Projects** CRUD
-- 🐞 **Bugs** CRUD with status workflow: `New → In Progress → Fixed → Verified → Closed`
-- 🔎 **Search, filtering and pagination**
-- 💬 **Comments** on bugs
-- 🕒 **Activity log** (timeline of status and assignee changes)
-- 👑 **Admin API**: manage users, change roles, system statistics
-- ✅ **Validation** middleware on all inputs
-- 🧱 **MVC architecture**
+- Register and login with **JWT** authentication; passwords hashed with **bcrypt**
+- **Roles** (`user`, `admin`) with ownership checks: users can only edit or delete what they created
+- **Projects** and **Bugs** with full CRUD
+- Bug status workflow: `New → In Progress → Fixed → Verified → Closed`
+- **Search, filters and pagination** on projects, bugs and users
+- **Comments** on bugs and an **activity timeline** of status changes
+- Screenshot upload for bugs (Cloudinary)
+- **Admin panel**: statistics, clickable breakdowns, user management and a list of all bugs across projects
+- Input **validation** on the backend (and basic checks on the frontend)
+- **Dark/light theme**, responsive layout (mobile, tablet, desktop)
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
+| Part | Technologies |
 |---|---|
-| Runtime | Node.js |
-| Framework | Express 5 |
-| Database | MongoDB Atlas + Mongoose |
+| Frontend | React (Vite), React Router, React-Bootstrap |
+| Backend | Node.js, Express 5, Mongoose |
+| Database | MongoDB Atlas |
 | Auth | JSON Web Tokens, bcrypt |
-| Frontend | React (Vite), React Router |
-| Deployment | Render (API) |
+| Images | Cloudinary (unsigned uploads) |
+| Hosting | Netlify (frontend), Render (backend) |
 
 ---
 
-## 📂 Backend Structure
+## 📂 Project Structure
 
 ```
-backend/
-├── config/         # DB connection and constants (enums)
-├── controllers/    # Business logic
-├── middleware/     # auth (protect, authorizeRole) and validation
-├── models/         # Mongoose schemas
-├── routes/         # API endpoints
-├── utils/          # Helpers (pagination, regex escape, ownership check)
-├── .env.example
-└── server.js
+reprolab/
+├── backend/
+│   ├── config/        # DB connection, constants
+│   ├── controllers/   # business logic
+│   ├── middleware/    # auth and validation
+│   ├── models/        # Mongoose schemas
+│   ├── routes/        # API routes
+│   ├── utils/         # helpers
+│   └── server.js
+└── frontend/
+    └── src/
+        ├── api/         # fetch wrapper that adds the JWT
+        ├── components/  # reusable UI (Navbar, Badge, Pagination...)
+        ├── context/     # Auth, Toast and Theme providers
+        ├── hooks/       # useDebounce
+        ├── pages/       # one file per page
+        └── utils/       # constants, helpers
 ```
 
-**Request flow:** `Route → Middleware (auth, validation) → Controller → Model → Response`
+The backend follows an **MVC** structure: `Route → Middleware → Controller → Model`.
 
 ---
 
-## 🗃️ Data Models
+## 🔌 API Overview
 
-| Model | Main fields |
+Base URL: `https://reprolab.onrender.com/api` (🔒 = needs a token, 👑 = admin only)
+
+| Area | Endpoints |
 |---|---|
-| **User** | name, email, password (hashed), role |
-| **Project** | name, description, owner |
-| **Bug** | title, stepsToReproduce, expectedResult, actualResult, environment, severity, priority, status, project, reporter, assignee |
-| **Comment** | text, bug, author |
-| **ActivityLog** | bug, user, action, from, to |
+| Auth | `POST /auth/register`, `POST /auth/login`, `GET /auth/me` 🔒 |
+| Projects 🔒 | `GET/POST /projects`, `GET/PUT/DELETE /projects/:id` |
+| Bugs 🔒 | `GET/POST /projects/:projectId/bugs`, `GET/PUT/DELETE /bugs/:id`, `GET /bugs/:id/activity` |
+| Comments 🔒 | `GET/POST /bugs/:id/comments`, `DELETE /comments/:id` |
+| Admin 👑 | `GET /admin/users`, `PUT /admin/users/:id/role`, `DELETE /admin/users/:id`, `GET /admin/stats`, `GET /admin/bugs` |
+
+List endpoints accept `search`, `page`, `limit`, and (for bugs) `status`, `severity`, `priority`.
 
 ---
 
-## 🔌 API Endpoints
+## 🚀 Run Locally
 
-Base URL: `https://reprolab.onrender.com/api`
-
-🔒 = requires `Authorization: Bearer <token>` · 👑 = admin only
-
-### Auth
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/auth/register` | Create an account |
-| POST | `/auth/login` | Login and receive a JWT |
-| GET | `/auth/me` 🔒 | Get the current user |
-
-### Projects 🔒
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/projects?search=&page=&limit=` | List projects |
-| POST | `/projects` | Create a project |
-| GET | `/projects/:id` | Get one project |
-| PUT | `/projects/:id` | Update (owner or admin) |
-| DELETE | `/projects/:id` | Delete with its bugs (owner or admin) |
-
-### Bugs 🔒
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/projects/:projectId/bugs?search=&status=&severity=&priority=&page=&limit=` | List, search, filter, paginate |
-| POST | `/projects/:projectId/bugs` | Report a bug |
-| GET | `/bugs/:id` | Get one bug |
-| PUT | `/bugs/:id` | Update (reporter or admin) |
-| DELETE | `/bugs/:id` | Delete (reporter or admin) |
-| GET | `/bugs/:id/activity` | Bug timeline |
-
-### Comments 🔒
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/bugs/:id/comments` | List comments |
-| POST | `/bugs/:id/comments` | Add a comment |
-| DELETE | `/comments/:id` | Delete (author or admin) |
-
-### Admin 👑
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/admin/users?search=` | List users |
-| PUT | `/admin/users/:id/role` | Change a user's role |
-| DELETE | `/admin/users/:id` | Delete a user |
-| GET | `/admin/stats` | Totals and bugs by status/severity |
-
-### Status codes
-`200` OK · `201` Created · `400` Bad request · `401` Not authenticated · `403` Not authorized · `404` Not found · `409` Conflict · `500` Server error
-
----
-
-## 🚀 Running the Backend Locally
-
-**Requirements:** Node.js 18+, a MongoDB Atlas cluster.
+**Requirements:** Node.js 18+ and a MongoDB Atlas database.
 
 ```bash
 git clone https://github.com/hebaalshannaq-coder/reprolab.git
-cd reprolab/backend
-npm install
+cd reprolab
 ```
 
-Create a `.env` file inside `backend/` (see `.env.example`):
-
+### Backend
+```bash
+cd backend
+npm install
+```
+Create `backend/.env`:
 ```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
@@ -138,56 +122,60 @@ JWT_SECRET=your_long_random_secret
 SALT_ROUNDS=10
 FRONTEND_URL=http://localhost:5173
 ```
-
-Generate a secure `JWT_SECRET`:
-
 ```bash
-node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+npm run dev
 ```
 
-Start the server:
-
-```bash
-npm run dev     # development (nodemon)
-npm start       # production
-```
-
-The API runs on `http://localhost:5000`.
-
----
-
-## 🔑 Environment Variables
-
-| Variable | Description |
-|---|---|
-| `PORT` | Server port (set automatically on Render) |
-| `MONGO_URI` | MongoDB connection string |
-| `JWT_SECRET` | Secret used to sign tokens |
-| `SALT_ROUNDS` | bcrypt cost factor (default 10) |
-| `FRONTEND_URL` | Allowed frontend origin (CORS) |
-
-> ⚠️ Never commit your `.env` file.
-
----
-
-## 👑 Creating the First Admin
-
-Registration always creates a regular `user` (to prevent privilege escalation). To create the first admin, register normally, then in MongoDB Atlas change that user's `role` to `"admin"`. Admins can then promote others through the Admin API.
-
----
-
-## 🖥️ Frontend
-
-React (Vite) app in `/frontend`. *Setup instructions coming soon.*
-
+### Frontend
 ```bash
 cd frontend
 npm install
+```
+Create `frontend/.env`:
+```env
+VITE_API_URL=http://localhost:5000/api
+VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_unsigned_preset
+```
+```bash
 npm run dev
 ```
+Open `http://localhost:5173`.
+
+### Creating the first admin
+Registration always creates a normal user (so nobody can make themselves admin). Register, then change that user's `role` to `"admin"` in MongoDB Atlas.
+
+---
+
+## 🔐 Security Notes
+
+- Passwords are hashed; the API never returns them.
+- `role` cannot be set from the request body when registering.
+- Every protected route checks the JWT; admin routes also check the role.
+- Fields that can be updated are whitelisted, and filter values are validated.
+- Secrets live in `.env` files, which are not committed (see `.env.example`).
+
+---
+
+## 📚 What I Learned
+
+- Designing a REST API with MVC structure, middleware and validation
+- Authentication vs. authorization, and why frontend checks are not enough
+- Connecting React to an API: Context, protected routes, `useEffect` with filters and pagination
+- Deploying a full-stack app (Atlas, Render, Netlify) and fixing CORS and environment issues
+- Debugging with Postman, browser DevTools and server logs
+
+## 🔭 Possible Improvements
+
+- Let the assigned developer change a bug's status
+- Real-time notifications and email alerts
+- Automated tests
+- Multiple screenshots per bug
 
 ---
 
 ## 👩‍💻 Author
 
-**Heba Alshannaq**: DOT Jordan Full-Stack Web Development Bootcamp, Final Project
+**Heba Alshannaq**
+DOT Jordan Full-Stack Web Development Bootcamp
+GitHub: [@hebaalshannaq-coder](https://github.com/hebaalshannaq-coder)
