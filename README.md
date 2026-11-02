@@ -6,7 +6,7 @@ Reporting a bug as "the login doesn't work" wastes everyone's time. ReproLab ask
 
 🌐 **Live demo:** https://reprolab.netlify.app
 🔗 **API:** https://reprolab.onrender.com
-🎥 **Video demo:** []
+🎥 **Video demo:** https://youtu.be/ZLhnoVMWCw4
 
 > The backend runs on Render's free tier, so the first request after a period of inactivity can take up to ~50 seconds.
 
@@ -14,7 +14,7 @@ Reporting a bug as "the login doesn't work" wastes everyone's time. ReproLab ask
 | Role | Email | Password |
 |---|---|---|
 | Admin | `admin@test.com` | `123456` |
-| User | `a@test.com` | `123456` |
+| User | `noor@test.com` | `123456` |
 
 ---
 
@@ -22,11 +22,11 @@ Reporting a bug as "the login doesn't work" wastes everyone's time. ReproLab ask
 
 | Projects | Project bugs |
 |---|---|
-| ![Projects](screenshots/projects.png) | ![Bugs](screenshots/bugs.png) |
+| ![Projects](screenshots/projects.png) | ![Admin](screenshots/admin.png) |
 
 | Bug details | Admin panel |
 |---|---|
-| ![Bug details](screenshots/bug-details.png) | ![Admin](screenshots/admin.png) |
+| ![Bugs](screenshots/bugs.png)   | ![Bug details](screenshots/bug-details.png) |
 
 ---
 
