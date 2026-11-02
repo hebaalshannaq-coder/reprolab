@@ -20,11 +20,11 @@ Reporting a bug as "the login doesn't work" wastes everyone's time. ReproLab ask
 
 ## 📸 Screenshots
 
-| Projects | Project bugs |
+| Projects |  Admin panel |
 |---|---|
 | ![Projects](screenshots/projects.png) | ![Admin](screenshots/admin.png) |
 
-| Bug details | Admin panel |
+| Project bugs | Bug details |
 |---|---|
 | ![Bugs](screenshots/bugs.png)   | ![Bug details](screenshots/bug-details.png) |
 
