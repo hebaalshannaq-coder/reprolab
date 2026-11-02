@@ -34,7 +34,7 @@
 
 
 - [x] Styling (React-Bootstrap) + Responsive
-- [ ] Extras: Cloudinary
+- [x] Extras: Cloudinary
 
 
-- [ ] Final testing + README + video + submit
+- [x] Final testing + README + video + submit
